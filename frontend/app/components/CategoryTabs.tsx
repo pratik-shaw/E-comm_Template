@@ -1,6 +1,8 @@
 // components/CategoryTabs.tsx
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import React, { useState } from 'react';
+'use client';
+
+import React from 'react';
+import { motion } from 'framer-motion';
 
 interface CategoryTabsProps {
   activeCategory: string;
@@ -16,21 +18,28 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({ activeCategory, setActiveCa
 
   return (
     <div className="flex justify-center mb-12">
-      <div className="inline-flex rounded-md p-1 bg-gray-100">
+      <motion.div 
+        className="inline-flex rounded-md p-1 bg-gray-800"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         {categories.map(category => (
-          <button
+          <motion.button
             key={category.id}
             className={`px-8 py-3 rounded-md text-sm font-medium transition-all ${
               activeCategory === category.id
-                ? 'bg-white text-amber-800 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'bg-gray-700 text-amber-400'
+                : 'text-gray-300 hover:text-amber-400'
             }`}
             onClick={() => setActiveCategory(category.id)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             {category.label}
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 };

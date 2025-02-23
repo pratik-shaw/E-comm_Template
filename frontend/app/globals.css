@@ -1,11 +1,10 @@
-/* app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 66, 60, 52;
-  --background-rgb: 249, 247, 245;
+  --foreground-rgb: 229, 231, 235;
+  --background-rgb: 17, 24, 39;
 }
 
 body {
@@ -29,14 +28,44 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f0ed;
+  @apply bg-gray-800;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #9d9589;
-  border-radius: 5px;
+  @apply bg-gray-600 rounded-md;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #82796e;
+  @apply bg-gray-500;
+}
+
+/* Animation utilities */
+@layer utilities {
+  .animate-fade-in {
+    @apply opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards];
+  }
+  
+  .animate-slide-up {
+    @apply translate-y-4 opacity-0 animate-[slideUp_0.5s_ease-out_forwards];
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
