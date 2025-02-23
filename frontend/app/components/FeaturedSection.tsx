@@ -5,6 +5,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import model from '@/app/images/model.jpg';
 
 const FeaturedSection = () => {
   return (
@@ -17,7 +18,7 @@ const FeaturedSection = () => {
         viewport={{ once: true }}
       >
         <Image
-          src="/images/model.jpg" 
+          src={model} 
           alt="Abnoxius Model"
           layout="fill"
           objectFit="cover"
