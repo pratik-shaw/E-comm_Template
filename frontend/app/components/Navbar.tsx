@@ -1,130 +1,149 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Search, User, ShoppingBag, Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  
+  // Header animation based on scroll
+  const { scrollY } = useScroll();
+  const headerOpacity = useTransform(scrollY, [0, 100], [1, 0.9]);
+  const headerBackdrop = useTransform(scrollY, [0, 100], [0, 1]);
+  
+  // Close menu when clicking outside
   useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
+    const handleClickOutside = (event: { target: any; }) => {
+      if (isMenuOpen && headerRef.current && !headerRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
       }
     };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+  
+  // Disable body scroll when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+  
+  const menuVariants = {
+    closed: { opacity: 0, x: "100%" },
+    open: { opacity: 1, x: 0, transition: { staggerChildren: 0.05, delayChildren: 0.2 } }
+  };
+  
+  const menuItemVariants = {
+    closed: { opacity: 0, x: 20 },
+    open: { opacity: 1, x: 0 }
+  };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrolled]);
+  const navItems = [
+    { name: "SHOP", href: "/shop" },
+    { name: "COLLECTIONS", href: "/collections" },
+    { name: "ABOUT", href: "/about" },
+    { name: "JOURNAL", href: "/journal" }
+  ];
 
   return (
     <>
-      <div className="fixed top-4 left-4 right-4 z-50 mx-auto md:w-3/4 lg:w-2/3 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2">
-        <nav
-          className={`rounded-xl transition-all duration-300 border border-amber-50/10 shadow-lg ${
-            scrolled
-              ? 'bg-black/60 backdrop-blur-md'
-              : 'bg-black/40 backdrop-blur-sm'
-          }`}
-        >
-          <div className="px-6 py-5">
-            <div className="flex items-center justify-between">
-              {/* Mobile Menu Button */}
-              <button 
-                className="lg:hidden text-amber-50 hover:text-amber-400 transition-colors"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-
-              {/* Desktop Navigation */}
-              <div className="hidden lg:flex space-x-8 items-center">
-                <Link 
-                  href="/shop" 
-                  className="text-amber-50 text-sm tracking-wider hover:text-amber-400 transition-colors"
-                >
-                  SHOP
-                </Link>
-                <Link 
-                  href="/about-us" 
-                  className="text-amber-50 text-sm tracking-wider hover:text-amber-400 transition-colors"
-                >
-                  ABOUT US
-                </Link>
-                <Link 
-                  href="/wash-and-learn" 
-                  className="text-amber-50 text-sm tracking-wider hover:text-amber-400 transition-colors"
-                >
-                  WASH & LEARN
-                </Link>
-              </div>
-
-              {/* Logo */}
-              <div className="absolute left-1/2 transform -translate-x-1/2">
-                <Link href="/">
-                  <motion.h1 
-                    className="text-2xl font-serif tracking-wider text-amber-50"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    ABNOXIUS
-                  </motion.h1>
-                </Link>
-              </div>
-
-              {/* Right Icons */}
-              <div className="flex items-center space-x-6">
-                <button className="text-amber-50 hover:text-amber-400 transition-colors">
-                  <Search size={20} />
-                </button>
-                <button className="text-amber-50 hover:text-amber-400 transition-colors hidden md:block">
-                  <User size={20} />
-                </button>
-                <button className="text-amber-50 hover:text-amber-400 transition-colors">
-                  <ShoppingBag size={20} />
-                </button>
-              </div>
-            </div>
+      <motion.header 
+        ref={headerRef}
+        className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-6"
+        style={{ 
+          opacity: headerOpacity,
+        }}
+      >
+        <motion.div 
+          className="absolute inset-0 bg-white backdrop-blur-md"
+          style={{ opacity: headerBackdrop }}
+        />
+        
+        <div className="relative flex justify-between items-center max-w-screen-2xl mx-auto">
+          <div className="w-24 md:w-32">
+            <Link href="/">
+              <h1 className="font-serif text-xl md:text-2xl tracking-widest cursor-pointer">MAISON</h1>
+            </Link>
           </div>
-        </nav>
-      </div>
-
+          
+          <nav className="hidden md:flex space-x-12 text-sm tracking-wider">
+            {navItems.map((item) => (
+              <Link key={item.name} href={item.href}>
+                <a className="py-2 relative group">
+                  {item.name}
+                  <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+                </a>
+              </Link>
+            ))}
+          </nav>
+          
+          <div className="flex items-center space-x-6">
+            <button className="hidden md:block">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+            <Link href="/cart">
+              <a>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M9 20a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm-7-4h8a2 2 0 002-2V8a2 2 0 00-2-2H8.5L7 3H3a1 1 0 000 2h3l1.5 3H6a2 2 0 00-2 2v6a2 2 0 002 2h2v-1z" />
+                </svg>
+              </a>
+            </Link>
+            <button 
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                {isMenuOpen ? (
+                  <path d="M18 6L6 18M6 6l12 12" />
+                ) : (
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+      </motion.header>
+      
       {/* Mobile Menu */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed top-24 left-4 right-4 bg-black/80 backdrop-blur-lg z-40 lg:hidden rounded-xl border border-amber-50/10 shadow-lg md:w-3/4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2"
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={menuVariants}
+            className="fixed inset-0 bg-white z-40 px-6 py-24 flex flex-col"
           >
-            <div className="py-8 px-6 space-y-6">
-              <Link 
-                href="/shop" 
-                className="block text-amber-50 text-lg tracking-wider hover:text-amber-400 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                SHOP
-              </Link>
-              <Link 
-                href="/about-us" 
-                className="block text-amber-50 text-lg tracking-wider hover:text-amber-400 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ABOUT US
-              </Link>
-              <Link 
-                href="/wash-and-learn" 
-                className="block text-amber-50 text-lg tracking-wider hover:text-amber-400 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                WASH & LEARN
-              </Link>
+            <div className="flex flex-col space-y-8 text-2xl">
+              {navItems.map((item) => (
+                <motion.div key={item.name} variants={menuItemVariants}>
+                  <Link href={item.href}>
+                    <a className="border-b border-gray-100 pb-2 block">{item.name}</a>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
+            
+            <motion.div 
+              variants={menuItemVariants}
+              className="mt-auto py-6 text-sm tracking-wide opacity-70"
+            >
+              © 2025 MAISON. All rights reserved.
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
