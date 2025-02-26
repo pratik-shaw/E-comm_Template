@@ -164,7 +164,7 @@ export default function HomePage() {
             className="absolute inset-0"
             style={{ scale: heroImageScale }}
           >
-            <div className="h-full w-full bg-[url('https://i.pinimg.com/736x/97/a7/f0/97a7f02ba8b22b749c6fc4f5d63f0458.jpg')] bg-center bg-cover"></div>
+            <div className="h-full w-full bg-[url('https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/brand-content-coremedia/women/2025/category/accessories/W_BC_FancyAcc_059_January25_DI3.jpg?wid=4096')] bg-center bg-cover"></div>
             <div className="absolute inset-0 bg-black/20"></div>
           </motion.div>
         </div>
@@ -211,7 +211,7 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <div className="aspect-[3/4] bg-[url('/images/philosophy.jpg')] bg-cover bg-center"></div>
+            <div className="aspect-[3/4] bg-[url('https://www.givenchy.com/coremedia/resource/blob/1692686/f022fe53c7e2c992d7d2ddf32d4ade6e/givenchy-2025-campaign-4x5-15-data.jpg')] bg-cover bg-center"></div>
           </motion.div>
           
           <motion.div
