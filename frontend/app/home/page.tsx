@@ -16,22 +16,22 @@ import { motion, useScroll, useTransform, useSpring, MotionValue, useMotionValue
 // Your existing product data
 const productsData = {
   shampoo: [
-    { id: 's1', name: 'Argania Restoration Shampoo', price: 42.00, rating: 4.8, image: '/images/product1.jpg', category: 'Shampoo' },
-    { id: 's2', name: 'Silk Protein Infusion', price: 38.00, rating: 4.7, image: '/images/product2.jpg', category: 'Shampoo' },
-    { id: 's3', name: 'Moroccan Clay Purify', price: 45.00, rating: 4.9, image: '/images/product3.jpg', category: 'Shampoo' },
-    { id: 's4', name: 'Alpine Herb Rejuvenation', price: 41.00, rating: 4.6, image: '/images/product4.jpg', category: 'Shampoo' },
+    { id: 's1', name: 'Argania Restoration Shampoo', price: 42.00, rating: 4.8, reviewCount: 124, image: 'https://fimgs.net/photogram/p1200/wk/5i/l16A88lG388c3wXV.jpg', category: 'Shampoo' },
+    { id: 's2', name: 'Silk Protein Infusion', price: 38.00, rating: 4.7, reviewCount: 98, image: 'https://www.myperfumeshop.com.au/cdn/shop/products/gucci-guilty-edp-travel-set-for-women-gift-set-713740.jpg?v=1671827882&width=1500', category: 'Shampoo' },
+    { id: 's3', name: 'Moroccan Clay Purify', price: 45.00, rating: 4.9, reviewCount: 156, image: 'https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/ae8392108556161.5fc01347d69ff.jpg', category: 'Shampoo' },
+    { id: 's4', name: 'Alpine Herb Rejuvenation', price: 41.00, rating: 4.6, reviewCount: 87, image: 'https://th.bing.com/th/id/OIP.a3K1bTK8emJQ_3PJLduGVwHaIK?rs=1&pid=ImgDetMain', category: 'Shampoo' },
   ],
   soaps: [
-    { id: 'sp1', name: 'Damascus Rose Body Cleanser', price: 28.00, rating: 4.9, image: '/images/soap1.jpg', category: 'Soap' },
-    { id: 'sp2', name: 'Neroli & Ylang Exfoliator', price: 32.00, rating: 4.8, image: '/images/soap2.jpg', category: 'Soap' },
-    { id: 'sp3', name: 'Himalayan Salt Purify Bar', price: 24.00, rating: 4.7, image: '/images/soap3.jpg', category: 'Soap' },
-    { id: 'sp4', name: 'Cedar & Sage Body Wash', price: 36.00, rating: 4.9, image: '/images/soap4.jpg', category: 'Soap' },
+    { id: 'sp1', name: 'Damascus Rose Body Cleanser', price: 28.00, rating: 4.9, reviewCount: 172, image: 'https://3.bp.blogspot.com/-8r5RwT0VOcE/W9iDrmZzUTI/AAAAAAAAEQI/o_eeaJgreyUR8V1URfEajG-eQuOMdY-NACEwYBhgL/s1600/011.JPG', category: 'Soap' },
+    { id: 'sp2', name: 'Neroli & Ylang Exfoliator', price: 32.00, rating: 4.8, reviewCount: 103, image: 'https://i.pinimg.com/originals/54/79/2e/54792e108297c7317a441a830bd9dbf9.jpg', category: 'Soap' },
+    { id: 'sp3', name: 'Himalayan Salt Purify Bar', price: 24.00, rating: 4.7, reviewCount: 91, image: 'https://pura.com/cdn/shop/files/EC_1_20_500x.png?v=1662065311', category: 'Soap' },
+    { id: 'sp4', name: 'Cedar & Sage Body Wash', price: 36.00, rating: 4.9, reviewCount: 134, image: 'https://th.bing.com/th/id/OIP.uh6TWnaYeHbQvWyey1sEPQHaIy?w=1200&h=1425&rs=1&pid=ImgDetMain', category: 'Soap' },
   ],
   accessories: [
-    { id: 'a1', name: 'Olivewood Hair Brush', price: 68.00, rating: 4.9, image: '/images/acc1.jpg', category: 'Accessory' },
-    { id: 'a2', name: 'Sisal Body Scrubber', price: 34.00, rating: 4.7, image: '/images/acc2.jpg', category: 'Accessory' },
-    { id: 'a3', name: 'Marble Soap Dish', price: 42.00, rating: 4.8, image: '/images/acc3.jpg', category: 'Accessory' },
-    { id: 'a4', name: 'Linen Wash Bag', price: 26.00, rating: 4.6, image: '/images/acc4.jpg', category: 'Accessory' },
+    { id: 'a1', name: 'Olivewood Hair Brush', price: 68.00, rating: 4.9, reviewCount: 76, image: 'https://sothebys-com.brightspotcdn.com/dims4/default/7b25018/2147483647/strip/true/crop/3308x4962+0+0/resize/684x1026!/quality/90/?url=http%3A%2F%2Fsothebys-brightspot.s3.amazonaws.com%2Fdotcom%2F0f%2F74%2F723bb34844c0bcc09dcac8cece8f%2Fsotheby-13.JPG', category: 'Accessory' },
+    { id: 'a2', name: 'Sisal Body Scrubber', price: 34.00, rating: 4.7, reviewCount: 64, image: 'https://th.bing.com/th/id/OIP.nVIQV4JpTi4y-s5DdMhUgwHaJQ?pid=ImgDet&w=195&h=243&c=7&dpr=2', category: 'Accessory' },
+    { id: 'a3', name: 'Marble Soap Dish', price: 42.00, rating: 4.8, reviewCount: 88, image: 'https://th.bing.com/th/id/OIP.w2hg0T7cg1-KZTdzg2_k7wHaJQ?w=819&h=1024&rs=1&pid=ImgDetMain', category: 'Accessory' },
+    { id: 'a4', name: 'Linen Wash Bag', price: 26.00, rating: 4.6, reviewCount: 52, image: 'https://cdn.shopify.com/s/files/1/0424/1457/products/FYB_S2211618.5x11copy_1024x1024.jpg?v=1646947297', category: 'Accessory' },
   ],
 };
 
@@ -195,7 +195,7 @@ export default function HomePage() {
 
       {/* Elegant Hero Section */}
       <motion.div 
-        className="relative z-20"
+        className="relative z-20 pt-8"
         style={{ 
           y: heroY,
           rotateX: heroRotateX,
@@ -260,7 +260,7 @@ export default function HomePage() {
                 className="group"
               >
                 <div className="relative overflow-hidden rounded-lg">
-                  <ProductCard reviewCount={42} {...product} />
+                  <ProductCard {...product} />
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100"
                     transition={{ duration: 0.4 }}
