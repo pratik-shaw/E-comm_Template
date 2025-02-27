@@ -1,35 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+"use client"
 
-export interface GalleryItem {
-  id: number;
-  image: string;
-  alt: string;
-}
+import { motion, useScroll } from "framer-motion";
+import { useRef } from "react";
 
-interface ExperienceGalleryProps {
-  title?: string;
-  items: GalleryItem[];
-}
-
-const ExperienceGallery = ({ 
-  title = "THE EXPERIENCE",
-  items = [
-    { id: 1, image: "/images/gallery-placeholder.jpg", alt: "Luxury hair product experience" },
-    { id: 2, image: "/images/gallery-placeholder.jpg", alt: "Luxury hair product experience" },
-    { id: 3, image: "/images/gallery-placeholder.jpg", alt: "Luxury hair product experience" },
-    { id: 4, image: "/images/gallery-placeholder.jpg", alt: "Luxury hair product experience" },
-    { id: 5, image: "/images/gallery-placeholder.jpg", alt: "Luxury hair product experience" }
-  ]
-}: ExperienceGalleryProps) => {
-  const galleryRef = useRef<HTMLDivElement>(null);
+const Experience = ({ images }) => {
+  const productSectionRef = useRef(null);
   
-  // Horizontal scroll progress for progress indicator
+  // Horizontal scroll for product gallery
   const { scrollXProgress } = useScroll({
-    container: galleryRef
+    container: productSectionRef
   });
-  
+
   return (
     <section className="py-24 relative overflow-hidden">
       <motion.div 
@@ -40,26 +21,24 @@ const ExperienceGallery = ({
       />
       
       <div className="relative z-10">
-        {title && (
-          <motion.h2 
-            className="font-serif text-3xl md:text-4xl mb-12 tracking-wider text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {title}
-          </motion.h2>
-        )}
+        <motion.h2 
+          className="font-serif text-3xl md:text-4xl mb-12 tracking-wider text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          THE EXPERIENCE
+        </motion.h2>
         
         <div 
-          ref={galleryRef} 
+          ref={productSectionRef} 
           className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory"
           style={{ scrollBehavior: "smooth" }}
         >
-          {items.map((item) => (
+          {images.map((image, index) => (
             <motion.div 
-              key={item.id}
+              key={index}
               className="min-w-[85vw] md:min-w-[60vw] lg:min-w-[40vw] h-[70vh] px-4 snap-center"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -68,14 +47,12 @@ const ExperienceGallery = ({
             >
               <div 
                 className="h-full w-full bg-gray-100 bg-cover bg-center"
-                style={{ backgroundImage: `url(${item.image})` }}
-                aria-label={item.alt}
+                style={{ backgroundImage: `url(${image})` }}
               ></div>
             </motion.div>
           ))}
         </div>
         
-        {/* Scroll progress indicator */}
         <motion.div 
           className="h-1 bg-gray-200 max-w-screen-lg mx-auto mt-8"
           initial={{ opacity: 0 }}
@@ -93,4 +70,4 @@ const ExperienceGallery = ({
   );
 };
 
-export default ExperienceGallery;
+export default Experience;

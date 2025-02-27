@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'Abnoxius - Luxury Hair & Body Care',
+  title: 'MAISON',
   description: 'Premium hair and body care products crafted with natural ingredients',
 };
 

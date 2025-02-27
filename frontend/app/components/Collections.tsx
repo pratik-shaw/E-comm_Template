@@ -1,92 +1,91 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
+"use client"
 
-export interface CollectionItem {
-  id: string;
-  name: string;
-  description: string;
+import { motion } from "framer-motion";
+
+interface Product {
+  id: string | number;
   image: string;
-  link: string;
+  category: string;
+  name: string;
+  price: string;
 }
 
-interface CollectionsProps {
-  title?: string;
-  collections: CollectionItem[];
+interface ProductsCollectionProps {
+  title: string;
+  products: Product[];
 }
 
-const Collections = ({ 
-  title = "EXPLORE COLLECTIONS", 
-  collections = [
-    { 
-      id: "essential", 
-      name: "THE ESSENTIALS", 
-      description: "Foundation for everyday luxury",
-      image: "/images/collection-placeholder.jpg",
-      link: "/collections/essential"
-    },
-    { 
-      id: "signature", 
-      name: "SIGNATURE", 
-      description: "Our distinguished classics",
-      image: "/images/collection-placeholder.jpg",
-      link: "/collections/signature"
-    },
-    { 
-      id: "limited", 
-      name: "LIMITED EDITION", 
-      description: "Exclusive seasonal offerings",
-      image: "/images/collection-placeholder.jpg",
-      link: "/collections/limited"
-    }
-  ]
-}: CollectionsProps) => {
+const ProductsCollection = ({ title, products }: ProductsCollectionProps) => {
+  // Product hover animation
+  const productHoverVariants = {
+    initial: { scale: 1 },
+    hover: { scale: 1.03, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } }
+  };
+
   return (
-    <section className="py-24 md:py-32 px-6 md:px-12">
+    <section className="py-24 md:py-32 px-6 md:px-12 bg-gray-50">
       <div className="max-w-screen-xl mx-auto">
-        {title && (
-          <motion.h2 
-            className="font-serif text-3xl md:text-4xl mb-16 md:mb-24 tracking-wider text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {title}
-          </motion.h2>
-        )}
+        <motion.h2 
+          className="font-serif text-3xl md:text-4xl mb-16 md:mb-24 tracking-wider text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {title}
+        </motion.h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-          {collections.map((collection, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+          {products.map((product, index) => (
             <motion.div
-              key={collection.id}
-              initial={{ opacity: 0, y: 40 }}
+              key={product.id}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.15 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
               viewport={{ once: true, margin: "-100px" }}
-              className="group relative bg-gray-50 aspect-[3/4] overflow-hidden"
+              className="group"
             >
-              <div 
-                className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url(${collection.image})` }}
-              ></div>
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
-              <div className="absolute inset-0 flex flex-col justify-end p-8">
-                <h3 className="font-serif text-2xl mb-2 text-white">{collection.name}</h3>
-                <p className="text-sm text-white/80 mb-6">{collection.description}</p>
-                <Link href={collection.link}>
-                  <a className="inline-block text-sm tracking-widest text-white relative w-fit">
-                    DISCOVER
-                    <span className="absolute bottom-0 left-0 w-full h-px bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-right group-hover:origin-left"></span>
-                  </a>
-                </Link>
+              <motion.div 
+                className="aspect-[4/5] mb-6 overflow-hidden"
+                variants={productHoverVariants}
+                initial="initial"
+                whileHover="hover"
+              >
+                <div 
+                  className="h-full w-full bg-gray-100 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                  style={{ backgroundImage: `url(${product.image})` }}
+                ></div>
+              </motion.div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-xs tracking-wider text-gray-500 mb-1">{product.category}</div>
+                  <h3 className="font-serif text-lg mb-1">{product.name}</h3>
+                  <div className="text-sm">{product.price}</div>
+                </div>
+                <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
+        
+        <motion.div 
+          className="mt-16 md:mt-24 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <a href="#" className="inline-block px-8 py-3 border border-black text-sm tracking-widest hover:bg-black hover:text-white transition-all duration-300">
+            VIEW ALL PRODUCTS
+          </a>
+        </motion.div>
       </div>
     </section>
   );
 };
 
-export default Collections;
+export default ProductsCollection;
