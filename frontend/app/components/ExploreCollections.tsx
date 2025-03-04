@@ -6,10 +6,20 @@ interface Collection {
   id: string;
   name: string;
   description: string;
-  image: string;
+  image?: string;
 }
 
-const ExploreCollections = ({ collections }: { collections: Collection[] }) => {
+const ExploreCollections = ({ collections }: { collections?: Collection[] }) => {
+  // Default collections data if none provided
+  const defaultCollections: Collection[] = [
+    { id: "essential", name: "THE ESSENTIALS", description: "Foundation for everyday luxury", image: "" },
+    { id: "signature", name: "SIGNATURE", description: "Our distinguished classics", image: "" },
+    { id: "limited", name: "LIMITED EDITION", description: "Exclusive seasonal offerings", image: "" }
+  ];
+
+  // Use provided collections or fall back to defaults
+  const displayCollections = collections || defaultCollections;
+
   return (
     <section className="py-24 md:py-32 px-6 md:px-12">
       <div className="max-w-screen-xl mx-auto">
@@ -24,7 +34,7 @@ const ExploreCollections = ({ collections }: { collections: Collection[] }) => {
         </motion.h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-          {collections.map((collection, index) => (
+          {displayCollections.map((collection, index) => (
             <motion.div
               key={collection.id}
               initial={{ opacity: 0, y: 40 }}
@@ -34,8 +44,12 @@ const ExploreCollections = ({ collections }: { collections: Collection[] }) => {
               className="group relative bg-gray-50 aspect-[3/4] overflow-hidden"
             >
               <div 
-                className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url(${collection.image})` }}
+                className={`h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105 ${
+                  collection.image 
+                    ? '' 
+                    : "bg-[url('/images/collection-placeholder.jpg')]"
+                }`}
+                style={collection.image ? { backgroundImage: `url(${collection.image})` } : {}}
               ></div>
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
               <div className="absolute inset-0 flex flex-col justify-end p-8">

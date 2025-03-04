@@ -1,20 +1,15 @@
 "use client"
 
-import { motion, MotionValue } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
 
-const Navbar = ({ scrollY }: { scrollY: MotionValue<number> }) => {
+export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   // Header animation based on scroll
-  const headerOpacity = scrollY ? 
-    { opacity: scrollY.get() > 100 ? 0.9 : 1 } : 
-    { opacity: 1 };
-  
-  const headerBackdrop = scrollY ? 
-    { opacity: scrollY.get() > 100 ? 1 : 0 } : 
-    { opacity: 0 };
+  const { scrollY } = useScroll();
+  const headerOpacity = useTransform(scrollY, [0, 100], [1, 0.9]);
+  const headerBackdrop = useTransform(scrollY, [0, 100], [0, 1]);
   
   const menuVariants = {
     closed: { opacity: 0, x: "100%" },
@@ -28,13 +23,16 @@ const Navbar = ({ scrollY }: { scrollY: MotionValue<number> }) => {
 
   return (
     <>
+      {/* Header */}
       <motion.header 
         className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-6"
-        style={headerOpacity}
+        style={{ 
+          opacity: headerOpacity,
+        }}
       >
         <motion.div 
           className="absolute inset-0 bg-white backdrop-blur-md"
-          style={headerBackdrop}
+          style={{ opacity: headerBackdrop }}
         />
         
         <div className="relative flex justify-between items-center max-w-screen-2xl mx-auto">
@@ -123,6 +121,4 @@ const Navbar = ({ scrollY }: { scrollY: MotionValue<number> }) => {
       </AnimatePresence>
     </>
   );
-};
-
-export default Navbar;
+}

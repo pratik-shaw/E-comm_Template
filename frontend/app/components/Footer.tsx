@@ -1,6 +1,4 @@
-import React from 'react';
-
-const Footer = () => {
+export default function Footer() {
   return (
     <footer className="py-16 md:py-24 px-6 md:px-12 bg-white">
       <div className="max-w-screen-xl mx-auto">
@@ -54,6 +52,4 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}
