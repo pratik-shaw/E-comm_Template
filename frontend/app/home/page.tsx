@@ -32,7 +32,7 @@ export default function HomePage() {
             className="absolute inset-0"
             style={{ scale: heroImageScale }}
           >
-            <div className="h-full w-full bg-[url('https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/brand-content-coremedia/women/2025/category/accessories/W_BC_FancyAcc_059_January25_DI3.jpg?wid=4096')] bg-center bg-cover"></div>
+            <div className="h-full w-full bg-[url('https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/brand-content-coremedia/women/2025/category/accessories/W_BC_EYEWEAR_036_January25_DI3.jpg?wid=4096')] bg-center bg-cover"></div>
             <div className="absolute inset-0 bg-black/20"></div>
           </motion.div>
         </div>
@@ -109,7 +109,13 @@ export default function HomePage() {
       
       
       {/* Horizontal Scrolling Gallery */}
-      <Experience images={[]}/>
+      <Experience images={[
+        "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Women_Accessories_WW_HP_Category_Push_DII.jpg?wid=730",
+        "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Women_WSLG_WW_HP_Category_Push_DII.jpg?wid=730",
+        "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2024/central/category/men_accessories/Men_Belt_WW_HP_Category_Push_V20240517_DII.jpg?wid=730",
+        "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2024/central/category/perfumes/Perfumes_HP_Category_Push_20241115_DII.jpg?wid=730",
+        "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Men_Bags_WW_HP_Category_Push_DII.jpg?wid=730"
+     ]}/>
       
       
       {/* Collections */}
