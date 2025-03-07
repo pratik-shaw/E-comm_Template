@@ -41,15 +41,15 @@ export default function Navbar() {
           </div>
           
           <nav className="hidden md:flex space-x-12 text-sm tracking-wider">
-            <a href="#" className="py-2 relative group">
+            <a href="/shop" className="py-2 relative group">
               SHOP
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#" className="py-2 relative group">
+            <a href="/collections" className="py-2 relative group">
               COLLECTIONS
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#" className="py-2 relative group">
+            <a href="/about" className="py-2 relative group">
               ABOUT
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
@@ -98,16 +98,22 @@ export default function Navbar() {
             className="fixed inset-0 bg-white z-40 px-6 py-24 flex flex-col"
           >
             <div className="flex flex-col space-y-8 text-2xl">
-              {["SHOP", "COLLECTIONS", "ABOUT", "JOURNAL"].map((item, index) => (
-                <motion.a
-                  key={index}
-                  href="#"
-                  variants={menuItemVariants}
-                  className="border-b border-gray-100 pb-2"
-                >
-                  {item}
-                </motion.a>
-              ))}
+            <a href="/shop" className="py-2 relative group">
+              SHOP
+              <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+            </a>
+            <a href="/collections" className="py-2 relative group">
+              COLLECTIONS
+              <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+            </a>
+            <a href="/about" className="py-2 relative group">
+              ABOUT
+              <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+            </a>
+            <a href="#" className="py-2 relative group">
+              JOURNAL
+              <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+            </a>
             </div>
             
             <motion.div 
