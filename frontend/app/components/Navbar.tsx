@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 "use client"
 
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -37,7 +38,9 @@ export default function Navbar() {
         
         <div className="relative flex justify-between items-center max-w-screen-2xl mx-auto">
           <div className="w-24 md:w-32">
+            <a href="/">
             <h1 className="font-serif text-xl md:text-2xl tracking-widest">MAISON</h1>
+            </a>
           </div>
           
           <nav className="hidden md:flex space-x-12 text-sm tracking-wider">
