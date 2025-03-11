@@ -208,6 +208,11 @@ export default function UserDashboard() {
       onClick: () => console.log('Manage Users clicked'),
     },
     {
+      title: 'Manage Orders',
+      icon: <ShoppingBag size={20} />,
+      onClick: () => console.log('Orders clicked'),
+    },
+    {
       title: 'Manage Products',
       icon: <Package size={20} />,
       onClick: () => console.log('Manage Products clicked'),
