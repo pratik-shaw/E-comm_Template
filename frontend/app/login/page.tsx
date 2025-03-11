@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronRight, Eye, EyeOff } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { useRouter } from "next/navigation";
 
 // Animation variants
 const pageVariants = {
@@ -30,15 +31,56 @@ const itemVariants = {
 };
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt with:", { email, password, rememberMe });
+    setError("");
+    setLoading(true);
+    
+    try {
+      // Call login API
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to login');
+      }
+      
+      // Store auth token and user data
+      localStorage.setItem('userToken', data.token);
+      localStorage.setItem('userInfo', JSON.stringify(data.user));
+      
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        router.push('/admin-dashboard');
+      } else {
+        router.push('/user-dashboard');
+      }
+      
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Login error:", error);
+      setError(error.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,6 +115,16 @@ export default function LoginPage() {
           initial="hidden"
           animate="visible"
         >
+          {error && (
+            <motion.div 
+              className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 text-sm"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {error}
+            </motion.div>
+          )}
+          
           <motion.form 
             variants={itemVariants} 
             className="space-y-6"
@@ -140,10 +192,14 @@ export default function LoginPage() {
             <motion.button
               variants={itemVariants}
               type="submit"
-              className="w-full py-3 px-6 bg-black text-white text-xs tracking-widest hover:bg-gray-900 transition-colors duration-300"
+              className="w-full py-3 px-6 bg-black text-white text-xs tracking-widest hover:bg-gray-900 transition-colors duration-300 flex items-center justify-center"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              disabled={loading}
             >
+              {loading ? (
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+              ) : null}
               SIGN IN
             </motion.button>
           </motion.form>

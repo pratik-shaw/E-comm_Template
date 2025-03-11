@@ -1,67 +1,202 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { motion } from "framer-motion";
-import { useState } from "react";
-import Link from "next/link";
-import { ChevronRight, Eye, EyeOff } from "lucide-react";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Navbar from '@/app/components/Navbar';
+import Footer from '@/app/components/Footer';
+import { motion } from 'framer-motion';
+import { User, ShoppingBag, Heart, LogOut, Settings } from 'lucide-react';
 
-// Animation variants
-const pageVariants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1,
-    transition: { 
-      staggerChildren: 0.1
+interface UserInfo {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export default function UserDashboard() {
+  const router = useRouter();
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('userToken');
+    const storedUserInfo = localStorage.getItem('userInfo');
+    
+    if (!token || !storedUserInfo) {
+      router.push('/login');
+      return;
     }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      duration: 0.6
+    
+    try {
+      const parsedUserInfo = JSON.parse(storedUserInfo);
+      setUserInfo(parsedUserInfo);
+      setLoading(false);
+      
+      // Verify token with backend silently - won't block UI
+      fetchUserData(token).catch(err => {
+        console.warn("Background validation failed:", err);
+        // Continue with local data
+      });
+    } catch (error) {
+      console.error("Error parsing user info:", error);
+      router.push('/login');
     }
-  }
-};
+  }, [router]);
 
-export default function SignupPage() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [acceptMarketing, setAcceptMarketing] = useState(false);
-
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    // Handle signup logic here
-    console.log("Signup attempt with:", { 
-      firstName, 
-      lastName, 
-      email, 
-      password, 
-      acceptTerms, 
-      acceptMarketing 
-    });
+  const fetchUserData = async (token: string) => {
+    try {
+      // ⚠️ IMPORTANT: Check your API endpoint path - 404 indicates wrong URL
+      // Try these alternative endpoints if you're unsure of the correct one
+      const apiEndpoints = [
+        'http://localhost:5000/api/auth/me',     // Original endpoint
+        'http://localhost:5000/api/users/me',    // Common alternative
+        'http://localhost:5000/api/user/profile' // Another common pattern
+      ];
+      
+      // Try each endpoint until one works
+      let response = null;
+      let endpointUsed = '';
+      
+      for (const endpoint of apiEndpoints) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
+          const res = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (res.ok) {
+            response = res;
+            endpointUsed = endpoint;
+            console.log(`Successfully connected to endpoint: ${endpoint}`);
+            break;
+          }
+        } catch (err) {
+          console.warn(`Endpoint ${endpoint} failed:`, err);
+          // Continue to next endpoint
+        }
+      }
+      
+      if (!response) {
+        // If all endpoints failed, try with a different port (3000 instead of 5000)
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
+          const alternatePort = 'http://localhost:3000/api/auth/current-user';
+          const res = await fetch(alternatePort, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (res.ok) {
+            response = res;
+            endpointUsed = alternatePort;
+            console.log(`Successfully connected to alternate port: ${alternatePort}`);
+          }
+        } catch (err) {
+          console.warn("Alternate port failed:", err);
+        }
+      }
+      
+      if (!response) {
+        throw new Error("Could not connect to any API endpoint. Check your backend configuration.");
+      }
+      
+      const userData = await response.json();
+      setUserInfo(userData);
+      setError(null);
+      
+      // Save the working endpoint for future reference
+      console.info("Working API endpoint:", endpointUsed);
+    } catch (error: any) {
+      console.error("Error fetching user data:", error);
+      
+      // Display a more helpful message about the 404 issue
+      if (error.message.includes('404')) {
+        setError('API endpoint not found (404). Please check your backend routes configuration.');
+      } else if (error.name === 'AbortError') {
+        setError('Request timed out. Please check your connection.');
+      } else if (error.message.includes('Failed to fetch')) {
+        setError('Could not connect to the server. Please make sure your backend is running.');
+      } else {
+        setError(`Error: ${error.message}`);
+      }
+      
+      // We'll continue with the locally stored user info
+      throw error; // Re-throw to be caught by the caller
+    }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userInfo');
+    router.push('/login');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-8 w-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Dashboard sections
+  const dashboardSections = [
+    {
+      title: 'My Profile',
+      icon: <User size={20} />,
+      onClick: () => console.log('Profile clicked'),
+    },
+    {
+      title: 'My Orders',
+      icon: <ShoppingBag size={20} />,
+      onClick: () => console.log('Orders clicked'),
+    },
+    {
+      title: 'Wishlist',
+      icon: <Heart size={20} />,
+      onClick: () => console.log('Wishlist clicked'),
+    },
+    {
+      title: 'Account Settings',
+      icon: <Settings size={20} />,
+      onClick: () => console.log('Settings clicked'),
+    },
+    {
+      title: 'Sign Out',
+      icon: <LogOut size={20} />,
+      onClick: handleLogout,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-light">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="h-[40vh] relative overflow-hidden">
+      <section className="h-[30vh] relative overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="h-full w-full bg-[url('https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/brand-content-coremedia/women/2025/category/jewelry/color-blossom/JEWELRY_BLOSSOM_VISUAL_LVCOM_01_DI3.jpg?wid=4096')] bg-center bg-cover"></div>
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="h-full w-full bg-gradient-to-r from-gray-800 to-black bg-center bg-cover"></div>
         </div>
         
         <motion.div 
@@ -70,173 +205,114 @@ export default function SignupPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="font-serif text-4xl md:text-6xl tracking-wide mb-4 text-center">CREATE ACCOUNT</h1>
+          <h1 className="font-serif text-3xl md:text-5xl tracking-wide mb-2 text-center">
+            Welcome, {userInfo?.name.split(' ')[0]}
+          </h1>
           <p className="text-xs md:text-sm tracking-widest max-w-xl mx-auto text-center px-6">
-            JOIN THE MAISON AND ENJOY A PERSONALIZED EXPERIENCE
+            YOUR PERSONAL ACCOUNT DASHBOARD
           </p>
         </motion.div>
       </section>
       
-      {/* Signup Form Section */}
-      <section className="py-16 md:py-24 px-4 md:px-12">
-        <motion.div 
-          className="max-w-lg mx-auto"
-          variants={pageVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.form 
-            variants={itemVariants} 
-            className="space-y-6"
-            onSubmit={handleSubmit}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div variants={itemVariants} className="space-y-2">
-                <label htmlFor="firstName" className="block text-xs tracking-widest uppercase">
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none transition-colors"
-                  required
-                />
-              </motion.div>
-              
-              <motion.div variants={itemVariants} className="space-y-2">
-                <label htmlFor="lastName" className="block text-xs tracking-widest uppercase">
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none transition-colors"
-                  required
-                />
-              </motion.div>
-            </div>
-            
-            <motion.div variants={itemVariants} className="space-y-2">
-              <label htmlFor="signup-email" className="block text-xs tracking-widest uppercase">
-                Email Address
-              </label>
-              <input
-                id="signup-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none transition-colors"
-                required
-              />
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="space-y-2">
-              <label htmlFor="signup-password" className="block text-xs tracking-widest uppercase">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="signup-password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Must be at least 8 characters with letters, numbers, and special characters.
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mx-4 md:mx-12 my-4">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {error}
               </p>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="space-y-2">
-              <label htmlFor="confirm-password" className="block text-xs tracking-widest uppercase">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  id="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:outline-none transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </motion.div>
-            
-            <motion.div variants={itemVariants} className="space-y-4 pt-4">
-              <div className="flex items-start">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  checked={acceptTerms}
-                  onChange={() => setAcceptTerms(!acceptTerms)}
-                  className="mt-1 h-4 w-4 border border-gray-300 focus:ring-0 focus:ring-offset-0"
-                  required
-                />
-                <label htmlFor="terms" className="ml-2 text-xs">
-                  I agree to the <a href="/terms" className="underline">Terms and Conditions</a> and <a href="/privacy" className="underline">Privacy Policy</a>
-                </label>
-              </div>
-              
-              <div className="flex items-start">
-                <input
-                  id="marketing"
-                  type="checkbox"
-                  checked={acceptMarketing}
-                  onChange={() => setAcceptMarketing(!acceptMarketing)}
-                  className="mt-1 h-4 w-4 border border-gray-300 focus:ring-0 focus:ring-offset-0"
-                />
-                <label htmlFor="marketing" className="ml-2 text-xs">
-                  I would like to receive news, collection updates and personalized offers by email
-                </label>
-              </div>
-            </motion.div>
-            
-            <motion.button
-              variants={itemVariants}
-              type="submit"
-              className="w-full py-3 px-6 bg-black text-white text-xs tracking-widest hover:bg-gray-900 transition-colors duration-300"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              <p className="text-xs text-red-600 mt-1">
+                Using locally stored profile data. Some features may be limited.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Dashboard Content */}
+      <section className="py-16 px-4 md:px-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Sidebar Navigation */}
+            <motion.div 
+              className="col-span-1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              CREATE ACCOUNT
-            </motion.button>
-          </motion.form>
-          
-          <motion.div 
-            variants={itemVariants}
-            className="mt-12 text-center"
-          >
-            <p className="text-sm mb-6">Already have an account?</p>
-            <Link 
-              href="/login" 
-              className="inline-flex items-center text-xs tracking-widest group"
+              <div className="bg-gray-50 p-6 rounded-md">
+                <h2 className="text-lg font-medium mb-4 pb-2 border-b border-gray-200">
+                  My Account
+                </h2>
+                
+                <ul className="space-y-2">
+                  {dashboardSections.map((section, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={section.onClick}
+                        className="flex items-center text-sm w-full py-2 px-3 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        <span className="mr-3">{section.icon}</span>
+                        {section.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+            
+            {/* Main Content */}
+            <motion.div 
+              className="col-span-1 md:col-span-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              SIGN IN 
-              <ChevronRight size={14} className="ml-1 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          </motion.div>
-        </motion.div>
+              <div className="bg-white p-6 border border-gray-100 rounded-md">
+                <h2 className="text-2xl font-medium mb-6">Account Overview</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Personal Info */}
+                  <div className="border border-gray-100 rounded-md p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-medium">Personal Information</h3>
+                      <button className="text-xs text-gray-600 hover:text-black">
+                        Edit
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                        <p>
+                            <span className="text-gray-500">Name:</span> {userInfo?.name || "N/A"}
+                        </p>
+                        <p>
+                            <span className="text-gray-500">Email:</span> {userInfo?.email || "N/A"}
+                        </p>
+                        <p>
+                            <span className="text-gray-500">Account Type:</span> {userInfo?.role ? userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1) : "N/A"}
+                        </p>
+                    </div>
+
+                  </div>
+                  {/* Recent Orders */}
+                  <div className="border border-gray-100 rounded-md p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-medium">Recent Orders</h3>
+                      <button className="text-xs text-gray-600 hover:text-black">
+                        View All
+                      </button>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 h-28 flex items-center justify-center">
+                      <p>You have no recent orders</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </section>
       
       <Footer />
