@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
@@ -5,6 +7,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
+import { motion } from 'framer-motion';
+import { Package } from 'lucide-react';
 
 interface Product {
   _id?: string;
@@ -356,277 +360,346 @@ export default function EditProducts() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white pt-20">
+    <div className="min-h-screen bg-white text-gray-900 font-light">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Manage Products</h1>
+      
+      {/* Hero Section */}
+      <section className="h-[30vh] relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="h-full w-full bg-gradient-to-r from-gray-800 to-black bg-center bg-cover"></div>
+        </div>
         
-        <form onSubmit={handleSubmit} className="mb-8 bg-gray-800 p-6 rounded shadow-lg">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Product Name*</label>
-              <input
-                type="text"
-                placeholder="Product name"
-                value={currentProduct.name}
-                onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
-                required
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
+        <motion.div 
+          className="relative h-full flex flex-col justify-center items-center text-white z-10 px-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="font-serif text-3xl md:text-5xl tracking-wide mb-2 text-center">
+            Manage Products
+          </h1>
+          <p className="text-xs md:text-sm tracking-widest max-w-xl mx-auto text-center px-6">
+            ADD, EDIT AND REMOVE PRODUCTS FROM YOUR INVENTORY
+          </p>
+        </motion.div>
+      </section>
+      
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mx-4 md:mx-12 my-4">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {error}
+              </p>
+              <p className="text-xs text-red-600 mt-1">
+                Some features may be limited.
+              </p>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">SKU*</label>
-              <input
-                type="text"
-                placeholder="SKU"
-                value={currentProduct.sku}
-                onChange={(e) => setCurrentProduct({...currentProduct, sku: e.target.value})}
-                required
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Description*</label>
-            <textarea
-              placeholder="Product description"
-              value={currentProduct.description}
-              onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})}
-              required
-              className="w-full p-2 bg-gray-700 rounded min-h-[150px] focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Price ($)*</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Price"
-                value={currentProduct.price}
-                onChange={(e) => setCurrentProduct({...currentProduct, price: parseFloat(e.target.value)})}
-                required
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Stock*</label>
-              <input
-                type="number"
-                min="0"
-                placeholder="Stock"
-                value={currentProduct.stock}
-                onChange={(e) => setCurrentProduct({...currentProduct, stock: parseInt(e.target.value)})}
-                required
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Discount (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                placeholder="Discount"
-                value={currentProduct.discount}
-                onChange={(e) => setCurrentProduct({...currentProduct, discount: parseInt(e.target.value)})}
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Category*</label>
-            <select
-              value={currentProduct.category}
-              onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})}
-              required
-              className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Category</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Tags</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                placeholder="Add a tag"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                className="flex-grow p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <button 
-                type="button" 
-                onClick={addTag}
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition duration-200"
-              >
-                Add
-              </button>
-            </div>
-            
-            {currentProduct.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {currentProduct.tags.map((tag, index) => (
-                  <div key={index} className="bg-blue-500 text-white px-3 py-1 rounded-full flex items-center">
-                    <span>{tag}</span>
-                    <button 
-                      type="button"
-                      onClick={() => removeTag(tag)} 
-                      className="ml-2 text-white hover:text-red-200"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Images</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-              <input
-                type="text"
-                placeholder="Image URL"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                placeholder="Public ID"
-                value={imagePublicId}
-                onChange={(e) => setImagePublicId(e.target.value)}
-                className="w-full p-2 bg-gray-700 rounded focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <button 
-              type="button" 
-              onClick={addImage}
-              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition duration-200 mb-2"
-            >
-              Add Image
-            </button>
-            
-            {currentProduct.imageUrls.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-                {currentProduct.imageUrls.map((image, index) => (
-                  <div key={index} className="bg-gray-700 p-2 rounded">
-                    <div className="aspect-square relative">
-                      <img 
-                        src={image.url} 
-                        alt={`Product image ${index + 1}`} 
-                        className="w-full h-full object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://via.placeholder.com/150?text=Image+Error';
-                        }}
-                      />
-                    </div>
-                    <div className="mt-2 flex justify-between items-center">
-                      <span className="text-xs truncate">{image.public_id}</span>
-                      <button 
-                        type="button"
-                        onClick={() => removeImage(index)} 
-                        className="text-red-500 hover:text-red-300"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex space-x-4">
-            <button 
-              type="submit" 
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition duration-200"
-            >
-              {isEditing ? 'Update Product' : 'Create Product'}
-            </button>
-            {isEditing && (
-              <button 
-                type="button" 
-                onClick={resetForm} 
-                className="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded transition duration-200"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Existing Products</h2>
-          <div className="space-y-4">
-            {productList.length === 0 ? (
-              <p className="text-gray-400">No products found. Create your first product above.</p>
-            ) : (
-              productList.map((product) => (
-                <div key={product._id} className="bg-gray-800 p-6 rounded shadow-lg flex justify-between items-center hover:bg-gray-750 transition duration-200">
-                  <div className="flex items-center">
-                    {product.imageUrls.length > 0 && (
-                      <div className="w-16 h-16 mr-4">
-                        <img 
-                          src={product.imageUrls[0].url} 
-                          alt={product.name}
-                          className="w-full h-full object-cover rounded"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://via.placeholder.com/150?text=No+Image';
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-bold text-xl mb-1">{product.name}</h3>
-                      <div className="text-gray-300 text-sm">
-                        <span>SKU: {product.sku}</span>
-                        <span className="mx-2">•</span>
-                        <span>${product.price.toFixed(2)}</span>
-                        <span className="mx-2">•</span>
-                        <span>Stock: {product.stock}</span>
-                        <span className="mx-2">•</span>
-                        <span>{product.category}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-x-3">
-                    <button 
-                      onClick={() => {
-                        setCurrentProduct(product);
-                        setIsEditing(true);
-                      }}
-                      className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded transition duration-200"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(product._id!)}
-                      className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition duration-200"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </div>
-      </div>
+      )}
+      
+      {/* Dashboard Content */}
+      <section className="py-16 px-4 md:px-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            {/* Form Section */}
+            <motion.div 
+              className="col-span-1 md:col-span-12"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="bg-gray-50 p-6 rounded-md shadow-sm mb-8">
+                <h2 className="text-lg font-medium mb-4 pb-2 border-b border-gray-200">
+                  {isEditing ? 'Edit Product' : 'Create New Product'}
+                </h2>
+                
+                <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Product Name*</label>
+                      <input
+                        type="text"
+                        placeholder="Product name"
+                        value={currentProduct.name}
+                        onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
+                        required
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">SKU*</label>
+                      <input
+                        type="text"
+                        placeholder="SKU"
+                        value={currentProduct.sku}
+                        onChange={(e) => setCurrentProduct({...currentProduct, sku: e.target.value})}
+                        required
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Description*</label>
+                    <textarea
+                      placeholder="Product description"
+                      value={currentProduct.description}
+                      onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})}
+                      required
+                      className="w-full p-2 border border-gray-200 rounded min-h-[150px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Price ($)*</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Price"
+                        value={currentProduct.price}
+                        onChange={(e) => setCurrentProduct({...currentProduct, price: parseFloat(e.target.value)})}
+                        required
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+  
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Stock*</label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Stock"
+                        value={currentProduct.stock}
+                        onChange={(e) => setCurrentProduct({...currentProduct, stock: parseInt(e.target.value)})}
+                        required
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+  
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-700">Discount (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="Discount"
+                        value={currentProduct.discount}
+                        onChange={(e) => setCurrentProduct({...currentProduct, discount: parseInt(e.target.value)})}
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Category*</label>
+                    <select
+                      value={currentProduct.category}
+                      onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})}
+                      required
+                      className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Tags</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Add a tag"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        className="flex-grow p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={addTag}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-200"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    
+                    {currentProduct.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {currentProduct.tags.map((tag, index) => (
+                          <div key={index} className="bg-gray-200 text-gray-800 px-3 py-1 rounded-full flex items-center">
+                            <span>{tag}</span>
+                            <button 
+                              type="button"
+                              onClick={() => removeTag(tag)} 
+                              className="ml-2 text-gray-500 hover:text-red-500"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Images</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Image URL"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Public ID"
+                        value={imagePublicId}
+                        onChange={(e) => setImagePublicId(e.target.value)}
+                        className="w-full p-2 border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={addImage}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-200 mb-2"
+                    >
+                      Add Image
+                    </button>
+                    
+                    {currentProduct.imageUrls.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                        {currentProduct.imageUrls.map((image, index) => (
+                          <div key={index} className="border border-gray-200 p-2 rounded">
+                            <div className="aspect-square relative">
+                              <img 
+                                src={image.url} 
+                                alt={`Product image ${index + 1}`} 
+                                className="w-full h-full object-cover rounded"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://via.placeholder.com/150?text=Image+Error';
+                                }}
+                              />
+                            </div>
+                            <div className="mt-2 flex justify-between items-center">
+                              <span className="text-xs truncate">{image.public_id}</span>
+                              <button 
+                                type="button"
+                                onClick={() => removeImage(index)} 
+                                className="text-gray-500 hover:text-red-500"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+  
+                  <div className="flex space-x-4">
+                    <button 
+                      type="submit" 
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition duration-200"
+                    >
+                      {isEditing ? 'Update Product' : 'Create Product'}
+                    </button>
+                    {isEditing && (
+                      <button 
+                        type="button" 
+                        onClick={resetForm} 
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded transition duration-200"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+            
+            {/* Product List Section */}
+            <motion.div
+              className="col-span-1 md:col-span-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="bg-white p-6 border border-gray-100 rounded-md shadow-sm">
+                <h2 className="text-2xl font-medium mb-6">Product Inventory</h2>
+                
+                <div className="space-y-4">
+                  {productList.length === 0 ? (
+                    <p className="text-gray-400">No products found. Create your first product above.</p>
+                  ) : (
+                    productList.map((product) => (
+                      <div key={product._id} className="bg-gray-50 p-6 rounded-md border border-gray-100 flex justify-between items-center hover:bg-gray-100 transition duration-200">
+                        <div className="flex items-center">
+                          {product.imageUrls.length > 0 ? (
+                            <div className="w-16 h-16 mr-4">
+                              <img 
+                                src={product.imageUrls[0].url} 
+                                alt={product.name}
+                                className="w-full h-full object-cover rounded"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://via.placeholder.com/150?text=No+Image';
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 mr-4 bg-gray-200 rounded flex items-center justify-center">
+                              <Package size={24} className="text-gray-400" />
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="font-medium text-xl mb-1">{product.name}</h3>
+                            <div className="text-gray-500 text-sm">
+                              <span>SKU: {product.sku}</span>
+                              <span className="mx-2">•</span>
+                              <span>${product.price.toFixed(2)}</span>
+                              <span className="mx-2">•</span>
+                              <span>Stock: {product.stock}</span>
+                              <span className="mx-2">•</span>
+                              <span>{product.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-x-3">
+                          <button 
+                            onClick={() => {
+                              setCurrentProduct(product);
+                              setIsEditing(true);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-200"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(product._id!)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition duration-200"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+      
       <Footer />
     </div>
   );
