@@ -95,7 +95,7 @@ export default function UserDashboard() {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 5000);
           
-          const alternatePort = 'http://localhost:3000/api/auth/current-user';
+          const alternatePort = 'http://localhost:3000/api/auth/me';
           const res = await fetch(alternatePort, {
             method: 'GET',
             headers: {

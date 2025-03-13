@@ -5,7 +5,7 @@ const cors = require('cors'); // For CORS handling
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
-
+const productRoutes = require('./routes/productRoutes'); // Product routes
 
 // Initialize environment variables
 dotenv.config();
@@ -27,7 +27,7 @@ app.use(express.json());
 
 // Use routes for different paths
 app.use('/api/auth', authRoutes);
-
+app.use('/api/products', productRoutes); // Product route
 
 // Connect to MongoDB
 mongoose
