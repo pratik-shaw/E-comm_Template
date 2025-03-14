@@ -47,14 +47,12 @@ const initialProductState: Product = {
 
 // Sample categories - you can replace with actual categories from your backend
 const categories = [
-  'Electronics',
+  'Accessories',
   'Clothing',
-  'Home & Kitchen',
-  'Books',
-  'Sports',
+  'Essentials',
+  'Fragnances',
+  'asion',
   'Beauty',
-  'Toys',
-  'Automotive'
 ];
 
 export default function EditProducts() {

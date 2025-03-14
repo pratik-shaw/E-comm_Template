@@ -8,7 +8,6 @@ import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import { motion } from 'framer-motion';
 import { User, ShoppingBag, Heart, LogOut, Settings, Users, Package, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface UserInfo {
   id: string;

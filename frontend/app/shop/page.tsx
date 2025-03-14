@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -8,108 +9,54 @@ import { useRef, useState, useEffect } from "react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { ChevronDown, Filter, X, ShoppingBag } from "lucide-react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
-// Product type definition
+// Product type definition updated to match backend schema
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   category: string;
-  images: string[];
+  imageUrls: {
+    public_id: string;
+    url: string;
+  }[];
+  description: string;
+  stock: number;
+  ratings: number;
+  discount?: number;
+  tags?: string[];
+  sku: string;
+  reviews?: {
+    user: string;
+    name: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+  // Adding derived properties that are used in the UI
   isNew?: boolean;
   isBestseller?: boolean;
+  images?: string[];
 }
 
-// Mock products data
-const PRODUCTS: Product[] = [
-  {
-    id: "p1",
-    name: "REVITALIZING HAIR SERUM",
-    price: 125,
-    category: "Serums",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Women_Accessories_WW_HP_Category_Push_DII.jpg?wid=730"
-    ],
-    isNew: true
-  },
-  {
-    id: "p2",
-    name: "HYDRATING SCALP TREATMENT",
-    price: 95,
-    category: "Treatments",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Women_WSLG_WW_HP_Category_Push_DII.jpg?wid=730"
-    ],
-    isBestseller: true
-  },
-  {
-    id: "p3",
-    name: "VOLUMIZING LUXURY SHAMPOO",
-    price: 85,
-    category: "Cleansers",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2024/central/category/men_accessories/Men_Belt_WW_HP_Category_Push_V20240517_DII.jpg?wid=730"
-    ]
-  },
-  {
-    id: "p4",
-    name: "INTENSIVE REPAIR MASK",
-    price: 110,
-    category: "Treatments",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2024/central/category/perfumes/Perfumes_HP_Category_Push_20241115_DII.jpg?wid=730"
-    ]
-  },
-  {
-    id: "p5",
-    name: "PROTECTIVE STYLING OIL",
-    price: 78,
-    category: "Oils",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Men_Bags_WW_HP_Category_Push_DII.jpg?wid=730"
-    ],
-    isNew: true
-  },
-  {
-    id: "p6",
-    name: "DEFINING TEXTURE CREAM",
-    price: 68,
-    category: "Styling",
-    images: [
-      "https://www.givenchy.com/coremedia/resource/blob/1692686/f022fe53c7e2c992d7d2ddf32d4ade6e/givenchy-2025-campaign-4x5-15-data.jpg"
-    ],
-    isBestseller: true
-  },
-  {
-    id: "p7",
-    name: "OVERNIGHT REJUVENATION SERUM",
-    price: 135,
-    category: "Serums",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/brand-content-coremedia/women/2025/category/accessories/W_BC_EYEWEAR_036_January25_DI3.jpg?wid=4096"
-    ]
-  },
-  {
-    id: "p8",
-    name: "SIGNATURE FRAGRANCE HAIR MIST",
-    price: 90,
-    category: "Fragrances",
-    images: [
-      "https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2024/central/category/perfumes/Perfumes_HP_Category_Push_20241115_DII.jpg?wid=730"
-    ]
-  }
-];
-
-// Available categories for filtering
-const CATEGORIES = ["All", "Serums", "Treatments", "Cleansers", "Oils", "Styling", "Fragrances"];
+// Available categories for filtering - will be dynamically populated
+const CATEGORIES = ["All"];
 
 export default function ShopPage() {
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(PRODUCTS);
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [sortBy, setSortBy] = useState("featured");
+  const [categories, setCategories] = useState<string[]>(["All"]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const heroRef = useRef(null);
   const scrollRef = useRef(null);
 
@@ -117,6 +64,58 @@ export default function ShopPage() {
   const { scrollY } = useScroll();
   const heroTextY = useTransform(scrollY, [0, 300], [0, 80]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+  // Fetch products from backend API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:5000/api/products");
+        const productsData = response.data;
+        
+        // Transform backend data to match frontend Product type if needed
+        const transformedProducts = productsData.map((product: Record<string, any>) => ({
+          _id: product._id,
+          name: product.name.toUpperCase(), // Keeping the uppercase format from your mock data
+          price: product.price,
+          category: product.category,
+          imageUrls: product.imageUrls,
+          description: product.description,
+          stock: product.stock,
+          ratings: product.ratings,
+          discount: product.discount,
+          tags: product.tags,
+          sku: product.sku,
+          reviews: product.reviews,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+          // Derived properties for UI consistency with your mock data
+          isNew: product.tags?.includes("new") || false,
+          isBestseller: product.tags?.includes("bestseller") || false,
+          // Use the first image URL or a placeholder
+          images: product.imageUrls && product.imageUrls.length > 0 
+            ? [product.imageUrls[0].url]
+            : ["https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/New-Homepage/2025/central/categories/evergreen/Women_Accessories_WW_HP_Category_Push_DII.jpg?wid=730"]
+        }));
+
+        setProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
+        
+        // Extract unique categories from products
+        const uniqueCategories: string[] = ["All", ...Array.from(new Set<string>(transformedProducts.map((p: Product) => p.category)))];
+        setCategories(uniqueCategories);
+
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setError("Failed to load products");
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Filter products based on category
   useEffect(() => {
@@ -139,10 +138,18 @@ export default function ShopPage() {
         sortedProducts.sort((a, b) => b.price - a.price);
         break;
       case "newest":
-        sortedProducts.sort((a, b) => (a.isNew === b.isNew) ? 0 : a.isNew ? -1 : 1);
+        sortedProducts.sort((a, b) => {
+          const aIsNew = a.tags?.includes("new") || false;
+          const bIsNew = b.tags?.includes("new") || false;
+          return (aIsNew === bIsNew) ? 0 : aIsNew ? -1 : 1;
+        });
         break;
       case "bestsellers":
-        sortedProducts.sort((a, b) => (a.isBestseller === b.isBestseller) ? 0 : a.isBestseller ? -1 : 1);
+        sortedProducts.sort((a, b) => {
+          const aIsBestseller = a.tags?.includes("bestseller") || false;
+          const bIsBestseller = b.tags?.includes("bestseller") || false;
+          return (aIsBestseller === bIsBestseller) ? 0 : aIsBestseller ? -1 : 1;
+        });
         break;
       default:
         // Featured - default sorting
@@ -179,6 +186,11 @@ export default function ShopPage() {
     setActiveCategory(category);
     setShowFilters(false);
     scrollToProducts();
+  };
+
+  // Navigate to product details page
+  const handleProductClick = (productId: string) => {
+    router.push(`/product-details/${productId}`);
   };
 
   // Product card animation variants
@@ -237,7 +249,7 @@ export default function ShopPage() {
             
             {/* Categories - Desktop */}
             <div className="hidden md:flex items-center gap-6 lg:gap-8 overflow-x-auto hide-scrollbar">
-              {CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <button
                   key={category}
                   className={`text-sm tracking-widest relative whitespace-nowrap ${
@@ -305,7 +317,7 @@ export default function ShopPage() {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <button
                     key={category}
                     className={`text-xs sm:text-sm tracking-widest py-2 border ${
@@ -337,57 +349,106 @@ export default function ShopPage() {
               {filteredProducts.length} PRODUCTS
             </h2>
             
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  custom={index}
-                  variants={cardVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="group"
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin h-8 w-8 border-2 border-black border-t-transparent rounded-full"></div>
+              </div>
+            )}
+            
+            {/* Error State */}
+            {error && (
+              <div className="text-center py-12">
+                <p className="text-red-500">{error}</p>
+                <button 
+                  className="mt-4 px-4 py-2 border border-black text-sm"
+                  onClick={() => window.location.reload()}
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden mb-3 sm:mb-4">
-                    <div 
-                      className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                      style={{ backgroundImage: `url(${product.images[0]})` }}
-                    ></div>
-                    
-                    {/* Quick shop overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-end justify-center opacity-0 group-hover:opacity-100">
-                      <button className="mb-4 sm:mb-6 px-3 sm:px-6 py-1 sm:py-2 bg-white text-black text-xs sm:text-sm tracking-widest hover:bg-black hover:text-white transition-colors duration-300">
-                        <span className="hidden xs:inline">QUICK VIEW</span>
-                        <ShoppingBag size={16} className="xs:hidden" />
-                      </button>
+                  Retry
+                </button>
+              </div>
+            )}
+            
+            {/* Products Grid */}
+            {!loading && !error && (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product._id}
+                    custom={index}
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="group cursor-pointer"
+                    onClick={() => handleProductClick(product._id)}
+                  >
+                    <div className="relative aspect-[3/4] overflow-hidden mb-3 sm:mb-4">
+                      <div 
+                        className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                        style={{ backgroundImage: `url(${product.imageUrls[0]?.url || product.images?.[0]})` }}
+                      ></div>
+                      
+                      {/* Quick shop overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-end justify-center opacity-0 group-hover:opacity-100">
+                        <button className="mb-4 sm:mb-6 px-3 sm:px-6 py-1 sm:py-2 bg-white text-black text-xs sm:text-sm tracking-widest hover:bg-black hover:text-white transition-colors duration-300">
+                          <span className="hidden xs:inline">QUICK VIEW</span>
+                          <ShoppingBag size={16} className="xs:hidden" />
+                        </button>
+                      </div>
+                      
+                      {/* Product tags */}
+                      {(product.isNew || product.isBestseller || product.tags?.includes("new") || product.tags?.includes("bestseller")) && (
+                        <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+                          {(product.isNew || product.tags?.includes("new")) && (
+                            <div className="bg-black text-white text-[10px] xs:text-xs tracking-widest px-2 sm:px-3 py-1 mb-1 sm:mb-2">
+                              NEW
+                            </div>
+                          )}
+                          {(product.isBestseller || product.tags?.includes("bestseller")) && (
+                            <div className="bg-white text-black text-[10px] xs:text-xs tracking-widest px-2 sm:px-3 py-1 border border-black">
+                              BESTSELLER
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Stock indicator */}
+                      {product.stock <= 0 && (
+                        <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 bg-red-500 text-white text-[10px] xs:text-xs tracking-widest px-2 sm:px-3 py-1">
+                          OUT OF STOCK
+                        </div>
+                      )}
+                      
+                      {/* Discount tag removed as requested */}
                     </div>
                     
-                    {/* Product tags */}
-                    {(product.isNew || product.isBestseller) && (
-                      <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
-                        {product.isNew && (
-                          <div className="bg-black text-white text-[10px] xs:text-xs tracking-widest px-2 sm:px-3 py-1 mb-1 sm:mb-2">
-                            NEW
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xs sm:text-sm tracking-wide mb-1">{product.name}</h3>
+                        <p className="text-[10px] xs:text-xs text-gray-500 tracking-wide">{product.category}</p>
+                      </div>
+                      <div>
+                        {product.discount && product.discount > 0 ? (
+                          <div className="text-right">
+                            <p className="text-xs sm:text-sm font-medium">${(product.price * (1 - product.discount / 100)).toFixed(2)}</p>
+                            <p className="text-[10px] xs:text-xs text-gray-500 line-through">${product.price}</p>
                           </div>
-                        )}
-                        {product.isBestseller && (
-                          <div className="bg-white text-black text-[10px] xs:text-xs tracking-widest px-2 sm:px-3 py-1 border border-black">
-                            BESTSELLER
-                          </div>
+                        ) : (
+                          <p className="text-xs sm:text-sm">${product.price}</p>
                         )}
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xs sm:text-sm tracking-wide mb-1">{product.name}</h3>
-                      <p className="text-[10px] xs:text-xs text-gray-500 tracking-wide">{product.category}</p>
                     </div>
-                    <p className="text-xs sm:text-sm">${product.price}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            
+            {/* No products found */}
+            {!loading && !error && filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No products found in this category.</p>
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
