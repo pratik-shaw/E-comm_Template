@@ -1,6 +1,6 @@
-// controllers/productController.js
 const Product = require('../models/Product');
 const slugify = require('slugify');
+const mongoose = require('mongoose');
 
 // Create a new product
 exports.createProduct = async (req, res) => {
@@ -54,6 +54,29 @@ exports.getProducts = async (req, res) => {
     const products = await Product.find().sort({ createdAt: -1 });
     res.status(200).json(products);
   } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get product by ID
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validate if ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid product ID format' });
+    }
+    
+    const product = await Product.findById(id);
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("Error fetching product:", error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

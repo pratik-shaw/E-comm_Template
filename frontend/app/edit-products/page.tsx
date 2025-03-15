@@ -51,7 +51,8 @@ const categories = [
   'Clothing',
   'Essentials',
   'Fragnances',
-  'asion',
+  'Fashion', // corrected spelling from 'Fasion'
+  'Footwear',
   'Beauty',
 ];
 
