@@ -211,11 +211,11 @@ export default function ShopPage() {
     <div className="min-h-screen bg-white text-gray-900 font-light">
       <Navbar />
 
-      {/* Hero Section */}
-      <section ref={heroRef} className="h-[50vh] sm:h-[60vh] relative overflow-hidden">
+      {/* Hero Section - Optimized for Mobile */}
+      <section ref={heroRef} className="h-[60vh] md:h-[80vh] relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="h-full w-full bg-[url('https://ap.louisvuitton.com/images/is/image//content/dam/lv/editorial-content/brand-content-coremedia/women/2025/category/accessories/W_BC_EYEWEAR_036_January25_DI3.jpg?wid=4096')] bg-center bg-cover"></div>
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-black/30"></div>
         </div>
         
         <motion.div 
