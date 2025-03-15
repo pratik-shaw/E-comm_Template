@@ -48,6 +48,7 @@ export default function ProductDetailsPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>("description");
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   // Fetch product details
   useEffect(() => {
@@ -123,6 +124,75 @@ export default function ProductDetailsPage() {
     console.log(`Added ${quantity} of ${product.name} to cart`);
     // Implement your cart logic here
   };
+
+  // Add this function to fetch related products
+// Fetch related products - modified to select random 4 products
+const fetchRelatedProducts = async (productCategory: string, currentProductId: string) => {
+  try {
+    // Fetch products in the same category
+    const response = await axios.get(`http://localhost:5000/api/products`, {
+      params: {
+        category: productCategory,
+        exclude: currentProductId,
+        // Request more than we need so we can randomize selection
+        limit: 10
+      }
+    });
+    
+    let productsPool = [...response.data];
+    
+    // If we don't have enough products in the same category, fetch some bestsellers
+    if (productsPool.length < 4) {
+      const bestsellersResponse = await axios.get(`http://localhost:5000/api/products`, {
+        params: {
+          tags: 'bestseller',
+          exclude: currentProductId,
+          limit: 10
+        }
+      });
+      
+      productsPool = [...productsPool, ...bestsellersResponse.data];
+    }
+    
+    // If we still don't have enough, just fetch any products
+    if (productsPool.length < 4) {
+      const anyProductsResponse = await axios.get(`http://localhost:5000/api/products`, {
+        params: {
+          exclude: currentProductId,
+          limit: 10
+        }
+      });
+      
+      productsPool = [...productsPool, ...anyProductsResponse.data];
+    }
+    
+    // Remove duplicates based on _id
+    const uniqueProducts = Array.from(new Map(productsPool.map(product => 
+      [product._id, product])).values());
+    
+    // Randomly select exactly 4 products or less if not enough available
+    let selectedProducts = [];
+    if (uniqueProducts.length <= 4) {
+      selectedProducts = uniqueProducts;
+    } else {
+      // Shuffle array and take first 4
+      const shuffled = [...uniqueProducts].sort(() => 0.5 - Math.random());
+      selectedProducts = shuffled.slice(0, 4);
+    }
+    
+    setRelatedProducts(selectedProducts);
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    setRelatedProducts([]);
+  }
+};
+
+// Add this useEffect to fetch related products
+useEffect(() => {
+  if (product && product.category) {
+    fetchRelatedProducts(product.category, product._id);
+  }
+}, [product]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-light pt-10">
@@ -473,23 +543,70 @@ export default function ProductDetailsPage() {
           </div>
           
           {/* You May Also Like Section */}
-          <div className="mt-16 md:mt-24">
-            <h2 className="text-xl md:text-2xl mb-8 text-center font-serif">YOU MAY ALSO LIKE</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="group cursor-pointer">
-                  <div className="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
-                    <div className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                         style={{ backgroundImage: `url(https://source.unsplash.com/random/300x400?product=${item})` }}>
-                    </div>
-                  </div>
-                  <h3 className="text-sm tracking-wide mb-1">RELATED PRODUCT</h3>
-                  <p className="text-xs text-gray-500 mb-1">{product.category}</p>
-                  <p className="text-sm">$99.00</p>
+<div className="mt-16 md:mt-24">
+  <h2 className="text-xl md:text-2xl mb-8 text-center font-serif">YOU MAY ALSO LIKE</h2>
+  {relatedProducts.length > 0 ? (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+      {relatedProducts.map((relatedProduct) => (
+        <motion.div 
+          key={relatedProduct._id} 
+          className="group cursor-pointer"
+          whileHover={{ y: -5 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => window.location.href = `/product/${relatedProduct._id}`}
+        >
+          <div className="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden relative">
+            {relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0 ? (
+              <div 
+                className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: `url(${relatedProduct.imageUrls[0].url})` }}
+              ></div>
+            ) : (
+              <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                <p className="text-gray-400 text-xs">No image</p>
+              </div>
+            )}
+            
+            {/* Product tags */}
+            <div className="absolute top-2 left-2 space-y-1">
+              {relatedProduct.tags?.includes('new') && (
+                <div className="bg-black text-white text-xs tracking-widest px-2 py-0.5 text-[10px]">
+                  NEW
                 </div>
-              ))}
+              )}
+              {relatedProduct.tags?.includes('bestseller') && (
+                <div className="bg-white text-black text-xs tracking-widest px-2 py-0.5 border border-black text-[10px]">
+                  BESTSELLER
+                </div>
+              )}
             </div>
           </div>
+          <h3 className="text-sm tracking-wide mb-1 transition-colors duration-300 group-hover:text-gray-600">{relatedProduct.name}</h3>
+          <p className="text-xs text-gray-500 mb-1">{relatedProduct.category}</p>
+          {relatedProduct.discount && relatedProduct.discount > 0 ? (
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium">${(relatedProduct.price * (1 - relatedProduct.discount / 100)).toFixed(2)}</p>
+              <p className="text-xs text-gray-500 line-through">${relatedProduct.price.toFixed(2)}</p>
+            </div>
+          ) : (
+            <p className="text-sm">${relatedProduct.price.toFixed(2)}</p>
+          )}
+        </motion.div>
+      ))}
+    </div>
+  ) : (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+      {[1, 2, 3, 4].map((item) => (
+        <div key={item} className="animate-pulse">
+          <div className="aspect-[3/4] bg-gray-200 mb-3"></div>
+          <div className="h-4 bg-gray-200 mb-2 w-3/4"></div>
+          <div className="h-3 bg-gray-200 mb-2 w-1/2"></div>
+          <div className="h-3 bg-gray-200 w-1/4"></div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
         </motion.div>
       ) : null}
       
