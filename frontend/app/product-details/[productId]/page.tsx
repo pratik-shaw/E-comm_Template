@@ -347,7 +347,7 @@ useEffect(() => {
                   {product.stock > 0 ? (
                     <span className="text-sm text-green-600 flex items-center">
                       <span className="h-2 w-2 rounded-full bg-green-600 mr-1"></span>
-                      In Stock ({product.stock} available)
+                      In Stock
                     </span>
                   ) : (
                     <span className="text-sm text-red-600 flex items-center">
@@ -553,7 +553,7 @@ useEffect(() => {
           className="group cursor-pointer"
           whileHover={{ y: -5 }}
           transition={{ duration: 0.3 }}
-          onClick={() => window.location.href = `/product/${relatedProduct._id}`}
+          onClick={() => window.location.href = `/product-details/${relatedProduct._id}`}
         >
           <div className="aspect-[3/4] bg-gray-100 mb-3 overflow-hidden relative">
             {relatedProduct.imageUrls && relatedProduct.imageUrls.length > 0 ? (
