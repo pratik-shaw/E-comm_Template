@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { ShoppingBag, Heart, ChevronDown } from "lucide-react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast"; // You'll need to install react-hot-toast
 
 // Product type definition
 interface Product {
@@ -41,6 +43,7 @@ interface Product {
 
 export default function ProductDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const productId = params?.productId as string;
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +52,7 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>("description");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   // Fetch product details
   useEffect(() => {
@@ -117,82 +121,130 @@ export default function ProductDetailsPage() {
     }
   };
 
-  // Add to cart function
-  const addToCart = () => {
-    if (!product) return;
-    
-    console.log(`Added ${quantity} of ${product.name} to cart`);
-    // Implement your cart logic here
-  };
+// Add to cart function - Fixed to match your login page's token approach
+const addToCart = async () => {
+  if (!product) return;
 
-  // Add this function to fetch related products
-// Fetch related products - modified to select random 4 products
-const fetchRelatedProducts = async (productCategory: string, currentProductId: string) => {
   try {
-    // Fetch products in the same category
-    const response = await axios.get(`http://localhost:5000/api/products`, {
-      params: {
-        category: productCategory,
-        exclude: currentProductId,
-        // Request more than we need so we can randomize selection
-        limit: 10
+    setAddingToCart(true);
+
+    // Check if user is logged in by checking for userToken (matching your login page)
+    const token = localStorage.getItem('userToken');
+
+    if (!token) {
+      // Redirect to login if not authenticated
+      toast.error('Please login to add items to cart');
+      router.push('/login');
+      return;
+    }
+
+    // API call to add to cart - Using the same token key as in your login page
+    const response = await axios.post(
+      'http://localhost:5000/api/cart/add',
+      {
+        productId: product._id,
+        quantity: quantity
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       }
-    });
+    );
+
+    // Success notification
+    toast.success(`${quantity} ${product.name} added to cart`);
     
-    let productsPool = [...response.data];
-    
-    // If we don't have enough products in the same category, fetch some bestsellers
-    if (productsPool.length < 4) {
-      const bestsellersResponse = await axios.get(`http://localhost:5000/api/products`, {
-        params: {
-          tags: 'bestseller',
-          exclude: currentProductId,
-          limit: 10
-        }
-      });
-      
-      productsPool = [...productsPool, ...bestsellersResponse.data];
-    }
-    
-    // If we still don't have enough, just fetch any products
-    if (productsPool.length < 4) {
-      const anyProductsResponse = await axios.get(`http://localhost:5000/api/products`, {
-        params: {
-          exclude: currentProductId,
-          limit: 10
-        }
-      });
-      
-      productsPool = [...productsPool, ...anyProductsResponse.data];
-    }
-    
-    // Remove duplicates based on _id
-    const uniqueProducts = Array.from(new Map(productsPool.map(product => 
-      [product._id, product])).values());
-    
-    // Randomly select exactly 4 products or less if not enough available
-    let selectedProducts = [];
-    if (uniqueProducts.length <= 4) {
-      selectedProducts = uniqueProducts;
-    } else {
-      // Shuffle array and take first 4
-      const shuffled = [...uniqueProducts].sort(() => 0.5 - Math.random());
-      selectedProducts = shuffled.slice(0, 4);
-    }
-    
-    setRelatedProducts(selectedProducts);
   } catch (error) {
-    console.error("Error fetching related products:", error);
-    setRelatedProducts([]);
+    console.error('Error adding to cart:', error);
+    
+    // Type guard for axios errors - handles the TypeScript error
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        toast.error('Please login to add items to cart');
+        // Clear token since it might be expired or invalid
+        localStorage.removeItem('userToken');
+        router.push('/login');
+      } else {
+        const errorMessage = error.response?.data?.message || 'Failed to add item to cart';
+        toast.error(errorMessage);
+      }
+    } else {
+      // For non-axios errors
+      toast.error('An unexpected error occurred');
+    }
+  } finally {
+    setAddingToCart(false);
   }
 };
 
-// Add this useEffect to fetch related products
-useEffect(() => {
-  if (product && product.category) {
-    fetchRelatedProducts(product.category, product._id);
-  }
-}, [product]);
+  // Fetch related products
+  const fetchRelatedProducts = async (productCategory: string, currentProductId: string) => {
+    try {
+      // Fetch products in the same category
+      const response = await axios.get(`http://localhost:5000/api/products`, {
+        params: {
+          category: productCategory,
+          exclude: currentProductId,
+          // Request more than we need so we can randomize selection
+          limit: 10
+        }
+      });
+      
+      let productsPool = [...response.data];
+      
+      // If we don't have enough products in the same category, fetch some bestsellers
+      if (productsPool.length < 4) {
+        const bestsellersResponse = await axios.get(`http://localhost:5000/api/products`, {
+          params: {
+            tags: 'bestseller',
+            exclude: currentProductId,
+            limit: 10
+          }
+        });
+        
+        productsPool = [...productsPool, ...bestsellersResponse.data];
+      }
+      
+      // If we still don't have enough, just fetch any products
+      if (productsPool.length < 4) {
+        const anyProductsResponse = await axios.get(`http://localhost:5000/api/products`, {
+          params: {
+            exclude: currentProductId,
+            limit: 10
+          }
+        });
+        
+        productsPool = [...productsPool, ...anyProductsResponse.data];
+      }
+      
+      // Remove duplicates based on _id
+      const uniqueProducts = Array.from(new Map(productsPool.map(product => 
+        [product._id, product])).values());
+      
+      // Randomly select exactly 4 products or less if not enough available
+      let selectedProducts = [];
+      if (uniqueProducts.length <= 4) {
+        selectedProducts = uniqueProducts;
+      } else {
+        // Shuffle array and take first 4
+        const shuffled = [...uniqueProducts].sort(() => 0.5 - Math.random());
+        selectedProducts = shuffled.slice(0, 4);
+      }
+      
+      setRelatedProducts(selectedProducts);
+    } catch (error) {
+      console.error("Error fetching related products:", error);
+      setRelatedProducts([]);
+    }
+  };
+
+  // Add this useEffect to fetch related products
+  useEffect(() => {
+    if (product && product.category) {
+      fetchRelatedProducts(product.category, product._id);
+    }
+  }, [product]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-light pt-10">
@@ -379,28 +431,32 @@ useEffect(() => {
                   </div>
                 </div>
                 
-                {/* Add to cart and wishlist buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <motion.button 
-                    className="w-full sm:flex-1 py-3 bg-black text-white text-sm tracking-widest flex justify-center items-center gap-2 hover:bg-gray-900 transition-colors"
-                    onClick={addToCart}
-                    disabled={product.stock <= 0}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <ShoppingBag size={16} />
-                    ADD TO CART
-                  </motion.button>
-                  
-                  <motion.button 
-                    className="w-full sm:w-auto py-3 px-6 border border-black text-sm tracking-widest flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Heart size={16} />
-                    WISHLIST
-                  </motion.button>
-                </div>
+ {/* Add to cart and wishlist buttons */}
+<div className="flex flex-col sm:flex-row gap-4 mb-8">
+  <motion.button 
+    className="w-full sm:flex-1 py-3 bg-black text-white text-sm tracking-widest flex justify-center items-center gap-2 hover:bg-gray-900 transition-colors"
+    onClick={addToCart}
+    disabled={product.stock <= 0 || addingToCart}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+  >
+    {addingToCart ? (
+      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+    ) : (
+      <ShoppingBag size={16} />
+    )}
+    {addingToCart ? "ADDING..." : "ADD TO CART"}
+  </motion.button>
+
+  <motion.button 
+    className="w-full sm:w-auto py-3 px-6 border border-black text-sm tracking-widest flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors"
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+  >
+    <Heart size={16} />
+    WISHLIST
+  </motion.button>
+</div>
                 
                 {/* SKU */}
                 <div className="text-xs text-gray-500 mb-8 flex gap-4">
