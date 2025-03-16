@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-html-link-for-pages */
 "use client"
 
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState("");
+  const router = useRouter();
   
   // Header animation based on scroll
   const { scrollY } = useScroll();
@@ -25,9 +29,66 @@ export default function Navbar() {
 
   // Check login status on component mount
   useEffect(() => {
-    const userLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(userLoggedIn);
+    // Check for token instead of just isLoggedIn flag
+    const token = localStorage.getItem("userToken");
+    
+    if (token) {
+      setIsLoggedIn(true);
+      // Get userId from localStorage if available
+      const storedUserId = localStorage.getItem("userId");
+      if (storedUserId) {
+        setUserId(storedUserId);
+      }
+    } else {
+      setIsLoggedIn(false);
+      // Clear userId if not logged in
+      setUserId("");
+    }
   }, []);
+
+  // Handle cart icon click
+  const handleCartClick = () => {
+    const token = localStorage.getItem("userToken");
+    
+    // Get userId either from localStorage or parse from JWT token
+    let userId = localStorage.getItem("userId");
+    
+    // If userId isn't directly stored, try to extract it from the token
+    if (!userId && token) {
+      try {
+        // This is a simple JWT parsing approach - adjust based on your token structure
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const tokenData = JSON.parse(jsonPayload);
+        userId = tokenData.id || tokenData._id || tokenData.userId || tokenData.user_id;
+      } catch (error) {
+        console.error("Error parsing token:", error);
+      }
+    }
+    
+    if (token) {
+      // Log for debugging
+      console.log("Token found:", token.substring(0, 15) + "...");
+      console.log("UserId found:", userId);
+      
+      if (userId) {
+        // Use Next.js router for navigation with the userId parameter
+        router.push(`/view-cart/${userId}`);
+      } else {
+        console.warn("No userId found, redirecting to default cart page");
+        router.push('/view-cart');
+      }
+    } else {
+      console.log("No token found, redirecting to login");
+      localStorage.removeItem("isLoggedIn");
+      setIsLoggedIn(false);
+      router.push('/login');
+    }
+  };
 
   return (
     <>
@@ -78,7 +139,7 @@ export default function Navbar() {
             </button>
             
             {isLoggedIn ? (
-              <a href="/profile" className="hidden md:block text-gray-700 hover:text-black transition-colors">
+              <a href="/user-dashboard" className="hidden md:block text-gray-700 hover:text-black transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
@@ -90,14 +151,21 @@ export default function Navbar() {
               </a>
             )}
             
-            <button className="text-gray-700 hover:text-black transition-colors">
+            {/* Updated cart icon with onClick handler */}
+            <button 
+              className="text-gray-700 hover:text-black transition-colors cursor-pointer"
+              onClick={handleCartClick}
+              aria-label="View Cart"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 20a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm-7-4h8a2 2 0 002-2V8a2 2 0 00-2-2H8.5L7 3H3a1 1 0 000 2h3l1.5 3H6a2 2 0 00-2 2v6a2 2 0 002 2h2v-1z" />
               </svg>
             </button>
+            
             <button 
               className="md:hidden text-gray-700 hover:text-black transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 {isMenuOpen ? (
@@ -139,10 +207,20 @@ export default function Navbar() {
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
             {isLoggedIn ? (
-              <a href="/profile" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
-                PROFILE
-                <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
-              </a>
+              <>
+                <a href="/user-dashboard" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+                  PROFILE
+                  <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+                </a>
+                {/* Added cart link to mobile menu */}
+                <button 
+                  onClick={handleCartClick}
+                  className="py-2 relative group text-gray-800 hover:text-black transition-colors text-left"
+                >
+                  CART
+                  <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
+                </button>
+              </>
             ) : (
               <a href="/login" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
                 LOGIN
