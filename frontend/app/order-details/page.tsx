@@ -176,7 +176,7 @@ export default function OrderDetailsPage() {
       
       // Wait 3 seconds before redirecting
       setTimeout(() => {
-        router.push('/orders');
+        router.push('/your-orders');
       }, 3000);
       
     } catch (error: any) {
