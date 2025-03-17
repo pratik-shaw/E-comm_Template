@@ -115,7 +115,7 @@ export default function UserDashboard() {
     {
       title: 'My Orders',
       icon: <ShoppingBag size={20} />,
-      onClick: () => console.log('Orders clicked'),
+      onClick: () => router.push('/your-orders'),
     },
     {
       title: 'Wishlist',

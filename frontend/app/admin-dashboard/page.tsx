@@ -210,7 +210,7 @@ export default function UserDashboard() {
     {
       title: 'Manage Orders',
       icon: <ShoppingBag size={20} />,
-      onClick: () => console.log('Orders clicked'),
+      onClick: () => router.push('/admin-orders-dashboard'),
     },
     {
       title: 'Manage Products',

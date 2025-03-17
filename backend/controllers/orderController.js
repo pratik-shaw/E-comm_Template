@@ -111,6 +111,56 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
+// Get all orders (admin only)
+exports.getAllOrders = async (req, res) => {
+    try {
+      const orders = await Order.find()
+        .sort({ createdAt: -1 }); // Sort by newest first
+      
+      res.status(200).json({
+        success: true,
+        count: orders.length,
+        orders
+      });
+    } catch (error) {
+      console.error('Get all orders error:', error);
+      res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
+    }
+  };
+  
+  // Update order status (admin only)
+  exports.updateOrderStatus = async (req, res) => {
+    try {
+      const orderId = req.params.id;
+      const { status } = req.body;
+      
+      // Validate status
+      const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid order status' });
+      }
+      
+      const order = await Order.findById(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+      
+      // Update order status
+      order.status = status;
+      await order.save();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Order status updated successfully',
+        order
+      });
+    } catch (error) {
+      console.error('Update order status error:', error);
+      res.status(500).json({ message: 'Failed to update order status', error: error.message });
+    }
+  };
+
 // Cancel an order
 exports.cancelOrder = async (req, res) => {
   try {
