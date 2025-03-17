@@ -7,6 +7,7 @@ const cors = require('cors'); // For CORS handling
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes'); // Product routes
 const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes'); // New order routes
 
 // Initialize environment variables
 dotenv.config();
@@ -30,6 +31,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes); // Product route
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes); // New order route
+
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)

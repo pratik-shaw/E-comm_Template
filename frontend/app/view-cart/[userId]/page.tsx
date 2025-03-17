@@ -227,7 +227,7 @@ export default function ViewCartPage() {
 
   // Navigate to checkout
   const proceedToCheckout = () => {
-    router.push('/checkout');
+    router.push('/order-details');
   };
 
   // Continue shopping
