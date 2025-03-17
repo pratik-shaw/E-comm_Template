@@ -107,31 +107,31 @@ export default function Navbar() {
         <div className="relative flex justify-between items-center max-w-screen-2xl mx-auto">
           <div className="w-24 md:w-32">
             <a href="/">
-            <h1 className="font-serif text-xl md:text-2xl tracking-widest text-gray-800">MAISON</h1>
+            <h1 className="font-serif text-xl md:text-2xl tracking-widest text-black">MAISON</h1>
             </a>
           </div>
           
           <nav className="hidden md:flex space-x-12 text-sm tracking-wider">
-            <a href="/shop" className="py-2 relative group text-gray-700 hover:text-black transition-colors">
+            <a href="/shop" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               SHOP
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="/collections" className="py-2 relative group text-gray-700 hover:text-black transition-colors">
+            <a href="/collections" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               COLLECTIONS
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="/about" className="py-2 relative group text-gray-700 hover:text-black transition-colors">
+            <a href="/about" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               ABOUT
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#" className="py-2 relative group text-gray-700 hover:text-black transition-colors">
+            <a href="#" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               JOURNAL
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
           </nav>
           
           <div className="flex items-center space-x-6">
-            <button className="hidden md:block text-gray-700 hover:text-black transition-colors">
+            <button className="hidden md:block text-black hover:blur-[0.5px] transition-all">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -139,21 +139,21 @@ export default function Navbar() {
             </button>
             
             {isLoggedIn ? (
-              <a href="/user-dashboard" className="hidden md:block text-gray-700 hover:text-black transition-colors">
+              <a href="/user-dashboard" className="hidden md:block text-black hover:blur-[0.5px] transition-all">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
               </a>
             ) : (
-              <a href="/login" className="hidden md:block text-gray-700 hover:text-black transition-colors text-sm tracking-wider">
+              <a href="/login" className="hidden md:block text-black hover:blur-[0.5px] transition-all text-sm tracking-wider">
                 LOGIN
               </a>
             )}
             
             {/* Updated cart icon with onClick handler */}
             <button 
-              className="text-gray-700 hover:text-black transition-colors cursor-pointer"
+              className="text-black hover:blur-[0.5px] transition-all cursor-pointer"
               onClick={handleCartClick}
               aria-label="View Cart"
             >
@@ -163,7 +163,7 @@ export default function Navbar() {
             </button>
             
             <button 
-              className="md:hidden text-gray-700 hover:text-black transition-colors"
+              className="md:hidden text-black hover:blur-[0.5px] transition-all"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
             >
@@ -190,39 +190,39 @@ export default function Navbar() {
             className="fixed inset-0 bg-white z-40 px-6 py-24 flex flex-col"
           >
             <div className="flex flex-col space-y-8 text-2xl">
-            <a href="/shop" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+            <a href="/shop" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               SHOP
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="/collections" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+            <a href="/collections" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               COLLECTIONS
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="/about" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+            <a href="/about" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               ABOUT
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+            <a href="#" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
               JOURNAL
               <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
             </a>
             {isLoggedIn ? (
               <>
-                <a href="/user-dashboard" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+                <a href="/user-dashboard" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
                   PROFILE
                   <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
                 </a>
                 {/* Added cart link to mobile menu */}
                 <button 
                   onClick={handleCartClick}
-                  className="py-2 relative group text-gray-800 hover:text-black transition-colors text-left"
+                  className="py-2 relative group text-black hover:blur-[0.5px] transition-all text-left"
                 >
                   CART
                   <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
                 </button>
               </>
             ) : (
-              <a href="/login" className="py-2 relative group text-gray-800 hover:text-black transition-colors">
+              <a href="/login" className="py-2 relative group text-black hover:blur-[0.5px] transition-all">
                 LOGIN
                 <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300"></span>
               </a>
@@ -231,7 +231,7 @@ export default function Navbar() {
             
             <motion.div 
               variants={menuItemVariants}
-              className="mt-auto py-6 text-sm tracking-wide text-gray-500"
+              className="mt-auto py-6 text-sm tracking-wide text-black"
             >
               © 2025 MAISON. All rights reserved.
             </motion.div>
