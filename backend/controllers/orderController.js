@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const User = require('../models/User');
+const { sendOrderStatusEmail } = require('../utils/emailService');
 
 // Create a new order
 exports.createOrder = async (req, res) => {
@@ -47,6 +48,14 @@ exports.createOrder = async (req, res) => {
     cart.items = [];
     cart.total = 0;
     await cart.save();
+
+    // Get user details for email notification
+    const user = await User.findById(userId);
+    
+    // Send initial order confirmation email
+    if (user && user.email) {
+      await sendOrderStatusEmail(order, user);
+    }
 
     res.status(201).json({
       success: true,
@@ -113,53 +122,71 @@ exports.getOrderById = async (req, res) => {
 
 // Get all orders (admin only)
 exports.getAllOrders = async (req, res) => {
-    try {
-      const orders = await Order.find()
-        .sort({ createdAt: -1 }); // Sort by newest first
-      
-      res.status(200).json({
-        success: true,
-        count: orders.length,
-        orders
-      });
-    } catch (error) {
-      console.error('Get all orders error:', error);
-      res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
+  try {
+    const orders = await Order.find()
+      .sort({ createdAt: -1 }); // Sort by newest first
+    
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+  } catch (error) {
+    console.error('Get all orders error:', error);
+    res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
+  }
+};
+
+// Update order status (admin only)
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { status } = req.body;
+    
+    // Validate status
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid order status' });
     }
-  };
-  
-  // Update order status (admin only)
-  exports.updateOrderStatus = async (req, res) => {
-    try {
-      const orderId = req.params.id;
-      const { status } = req.body;
-      
-      // Validate status
-      const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-      if (!validStatuses.includes(status)) {
-        return res.status(400).json({ message: 'Invalid order status' });
-      }
-      
-      const order = await Order.findById(orderId);
-      
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-      
-      // Update order status
-      order.status = status;
-      await order.save();
-      
-      res.status(200).json({
-        success: true,
-        message: 'Order status updated successfully',
-        order
-      });
-    } catch (error) {
-      console.error('Update order status error:', error);
-      res.status(500).json({ message: 'Failed to update order status', error: error.message });
+    
+    const order = await Order.findById(orderId);
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
-  };
+    
+    // Store previous status to check if it changed
+    const previousStatus = order.status;
+    
+    // Update order status
+    order.status = status;
+    await order.save();
+    
+    // If status has changed, send email notification
+    if (previousStatus !== status) {
+      // Find the user associated with this order
+      const user = await User.findById(order.user);
+      
+      if (user && user.email) {
+        // Send email notification about status change
+        const emailSent = await sendOrderStatusEmail(order, user);
+        
+        if (!emailSent) {
+          console.warn(`Failed to send email notification for order ${order.orderNumber}`);
+        }
+      }
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Order status updated successfully',
+      order
+    });
+  } catch (error) {
+    console.error('Update order status error:', error);
+    res.status(500).json({ message: 'Failed to update order status', error: error.message });
+  }
+};
 
 // Cancel an order
 exports.cancelOrder = async (req, res) => {
@@ -185,9 +212,18 @@ exports.cancelOrder = async (req, res) => {
       });
     }
     
+    // Store previous status
+    const previousStatus = order.status;
+    
     // Update order status to Cancelled
     order.status = 'Cancelled';
     await order.save();
+    
+    // Since the status changed, send email notification
+    const user = await User.findById(userId);
+    if (user && user.email) {
+      await sendOrderStatusEmail(order, user);
+    }
     
     res.status(200).json({
       success: true,
