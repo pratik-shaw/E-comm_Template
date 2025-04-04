@@ -220,7 +220,7 @@ export default function UserDashboard() {
     {
       title: 'Analytics',
       icon: <Activity size={20} />,
-      onClick: () => console.log('Analytics clicked'),
+      onClick: () => router.push('/admin-analytics'),
     },
     ...userDashboardSections
   ];

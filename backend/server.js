@@ -14,6 +14,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes'); // Product routes
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes'); // New order routes
+const analyticsRoutes = require('./routes/analyticsRoutes'); // New analytics routes
 
 // Create Express app
 const app = express();
@@ -22,7 +23,7 @@ const app = express();
 app.use(
   cors({
     origin: 'http://localhost:3000', // Update with your frontend URL if needed
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes); // Product route
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes); // New order route
+app.use('/api/analytics', analyticsRoutes); // New analytics route
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -53,7 +55,11 @@ app.use((err, req, res, next) => {
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected');
+    // You might want to initialize analytics collection here
+    // or create a default document for today if needed
+  })
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err.message); // Debug log for database errors
     process.exit(1);
