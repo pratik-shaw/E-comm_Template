@@ -504,3 +504,5 @@ export default function AdminAnalyticsPage() {
     </div>
   );
 }
+// this route is still not protected, so any one can access it.
+// make sure you protect it in the future so the analytics data can be accessed only by the admin.
