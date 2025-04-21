@@ -13,8 +13,9 @@ const { transporter } = require('./utils/emailService');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes'); // Product routes
 const cartRoutes = require('./routes/cartRoutes');
-const orderRoutes = require('./routes/orderRoutes'); // New order routes
-const analyticsRoutes = require('./routes/analyticsRoutes'); // New analytics routes
+const orderRoutes = require('./routes/orderRoutes'); // Order routes
+const reviewRoutes = require('./routes/reviewRoutes'); // Review routes
+const analyticsRoutes = require('./routes/analyticsRoutes'); // Analytics routes
 
 // Create Express app
 const app = express();
@@ -38,10 +39,11 @@ app.get('/', (req, res) => {
 
 // Use routes for different paths
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes); // Product route
+app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes); // New order route
-app.use('/api/analytics', analyticsRoutes); // New analytics route
+app.use('/api/orders', orderRoutes);
+app.use('/api/reviews', reviewRoutes); // New review route
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
