@@ -974,3 +974,5 @@ export default function ProductDetailsPage() {
     </div>
   );
 }
+
+//impletation of reviews system is left also the rating implementation is left too 
