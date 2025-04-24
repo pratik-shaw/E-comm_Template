@@ -1,45 +1,37 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
   product: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
-    required: true,
+    required: true
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   name: {
     type: String,
-    required: true,
+    required: true
   },
   rating: {
     type: Number,
     required: true,
     min: 1,
-    max: 5,
+    max: 5
   },
   comment: {
     type: String,
-    required: true,
+    required: true
   },
-  certifiedBuyer: {
+  isCertifiedBuyer: {
     type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-}, {
-  timestamps: true
-});
+    default: false
+  }
+}, { timestamps: true });
 
-// Compound index to ensure a user can only review a product once
-reviewSchema.index({ user: 1, product: 1 }, { unique: true });
+// Prevent multiple reviews from same user on same product
+reviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
-const Review = mongoose.model('Review', reviewSchema);
-
-module.exports = Review;
+module.exports = mongoose.model('Review', reviewSchema);

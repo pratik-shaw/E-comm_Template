@@ -14,8 +14,9 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes'); // Product routes
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes'); // Order routes
-const reviewRoutes = require('./routes/reviewRoutes'); // Review routes
 const analyticsRoutes = require('./routes/analyticsRoutes'); // Analytics routes
+const reviewRoutes = require('./routes/reviewRoutes');
+
 
 // Create Express app
 const app = express();
@@ -42,8 +43,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/reviews', reviewRoutes); // New review route
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/reviews', reviewRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
